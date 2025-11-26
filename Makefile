@@ -12,11 +12,12 @@ include $(DEVKITPRO)/libnx/switch_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	ovlr
 BUILD		:=	build
+BUILD_NRO	:=	build_nro
 SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
 APP_TITLE	:=  Ultrahand Reload
-APP_AUTHOR	:=  ppkantorski
+APP_AUTHOR	:=	ppkantorski
 APP_VERSION	:=	1.0.0
 APP_ICON	:=	icon.jpg
 #NO_ICON := 1
@@ -49,14 +50,24 @@ LIBS	:= -lnx
 LIBDIRS	:= $(PORTLIBS) $(LIBNX)
 
 #---------------------------------------------------------------------------------
-ifneq ($(BUILD),$(notdir $(CURDIR)))
+# Check if we're in the top-level directory or a build directory
+#---------------------------------------------------------------------------------
+ifeq ($(notdir $(CURDIR)),$(BUILD))
+    IN_BUILD_DIR := 1
+else ifeq ($(notdir $(CURDIR)),$(BUILD_NRO))
+    IN_BUILD_DIR := 1
+else
+    IN_BUILD_DIR := 0
+endif
+
+ifneq ($(IN_BUILD_DIR),1)
+#---------------------------------------------------------------------------------
+# Top-level directory - set up recursive make
 #---------------------------------------------------------------------------------
 
-export OUTPUT	:=	$(CURDIR)/$(TARGET)
 export TOPDIR	:=	$(CURDIR)
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
-export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
@@ -83,7 +94,6 @@ export APP_TITLE
 export APP_AUTHOR
 export APP_VERSION
 export APP_ICON
-export BUILDING_NRO_DIRECTIVE
 
 ifeq ($(strip $(CONFIG_JSON)),)
 	jsons := $(wildcard *.json)
@@ -98,30 +108,35 @@ else
 	export APP_JSON := $(TOPDIR)/$(CONFIG_JSON)
 endif
 
-
-
-.PHONY: $(BUILD) clean all dist
+.PHONY: all clean dist sysmodule nro
 
 #---------------------------------------------------------------------------------
-all: $(BUILD)
+all: sysmodule nro
+	@echo "Build complete!"
 
-$(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
-ifeq ($(BUILDING_NRO_DIRECTIVE),1)
-	@echo "NRO build complete!"
-else
+sysmodule:
+	@echo "Building sys-module..."
+	@[ -d $(BUILD) ] || mkdir -p $(BUILD)
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile BUILDING_NRO_DIRECTIVE=0 DEPSDIR=$(CURDIR)/$(BUILD) OUTPUT=$(CURDIR)/$(BUILD)/$(TARGET)
 	@echo "Creating sys-module package..."
-	@rm -rf out/
-	@mkdir -p out/atmosphere/contents/420000000007E51B/flags
-	@cp $(CURDIR)/$(TARGET).nsp out/atmosphere/contents/420000000007E51B/exefs.nsp
-	@echo "Sys-module package created in out/"
-endif
+	@rm -rf out/atmosphere
+	@mkdir -p out/atmosphere/contents/420000000007E51B
+	@cp $(BUILD)/$(TARGET).nsp out/atmosphere/contents/420000000007E51B/exefs.nsp
+	@echo "Sys-module package created in out/atmosphere/"
+
+nro:
+	@echo "Building NRO..."
+	@[ -d $(BUILD_NRO) ] || mkdir -p $(BUILD_NRO)
+	@$(MAKE) --no-print-directory -C $(BUILD_NRO) -f $(CURDIR)/Makefile BUILDING_NRO_DIRECTIVE=1 DEPSDIR=$(CURDIR)/$(BUILD_NRO) OUTPUT=$(CURDIR)/$(BUILD_NRO)/$(TARGET)
+	@echo "Creating NRO package..."
+	@mkdir -p out/switch
+	@cp $(BUILD_NRO)/$(TARGET).nro out/switch/Ultrahand-Reload.nro
+	@echo "NRO package created in out/switch/"
 
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).nsp $(TARGET).nso $(TARGET).npdm $(TARGET).elf $(TARGET).nacp $(TARGET).nro
+	@rm -fr $(BUILD) $(BUILD_NRO) $(TARGET).nsp $(TARGET).nso $(TARGET).npdm $(TARGET).elf $(TARGET).nacp $(TARGET).nro
 	@rm -rf out/
 	@rm -f $(TARGET).zip
 
@@ -129,24 +144,25 @@ clean:
 dist: all
 	@echo making dist ...
 	@rm -f $(TARGET).zip
-ifeq ($(BUILDING_NRO_DIRECTIVE),1)
-	@echo "Warning: dist target is for sys-module builds (BUILDING_NRO_DIRECTIVE=0)"
-else
 	@cd out; zip -r ../$(TARGET).zip ./*; cd ../
 	@echo "Distribution package created: $(TARGET).zip"
-endif
 
 #---------------------------------------------------------------------------------
 else
-.PHONY:	all
+#---------------------------------------------------------------------------------
+# Inside build directory - do actual compilation
+#---------------------------------------------------------------------------------
 
+.PHONY: all
+
+export DEPSDIR
 DEPENDS	:=	$(OFILES:.o=.d)
 
 #---------------------------------------------------------------------------------
 # Conditional build based on BUILDING_NRO_DIRECTIVE
 #---------------------------------------------------------------------------------
 ifeq ($(BUILDING_NRO_DIRECTIVE),1)
-# NRO-only build
+# NRO build
 all	:	$(OUTPUT).nro
 
 $(OUTPUT).nacp:
@@ -156,7 +172,6 @@ $(OUTPUT).nacp:
 $(OUTPUT).nro: $(OUTPUT).elf $(OUTPUT).nacp
 	@echo "Building $(OUTPUT).nro..."
 	@elf2nro $< $@ --nacp=$(OUTPUT).nacp --icon=$(TOPDIR)/$(APP_ICON)
-	@mv $(OUTPUT).nro ../Ultrahand-Reload.nro
 
 else
 # Sys-module build (NSP)
