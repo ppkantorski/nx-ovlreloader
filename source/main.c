@@ -1,3 +1,29 @@
+/********************************************************************************
+ * File: main.c
+ * Author: ppkantorski
+ * Description: 
+ *   This file contains the main program logic for nx-ovlreloader, a system module
+ *   designed to monitor and automatically respawn nx-ovlloader if it exits or is
+ *   terminated. It ensures that overlays remain active and allows developers to
+ *   reload nx-ovlloader without requiring a full console restart.
+ * 
+ *   Key Features:
+ *   - Monitors the nx-ovlloader process and detects termination.
+ *   - Automatically respawns nx-ovlloader after a configurable delay.
+ *   - Minimal heap usage and self-contained sysmodule design.
+ *   - Compatible with libnx-based homebrew and other sysmodules.
+ * 
+ *   For the latest updates and contributions, visit the project's GitHub repository.
+ *   (GitHub Repository: https://github.com/ppkantorski/nx-ovlloader)
+ * 
+ *   Note: Please be aware that this notice cannot be altered or removed. It is a part
+ *   of the project's documentation and must remain intact.
+ *
+ *  Licensed under GPLv2
+ *  Copyright (c) 2025 ppkantorski
+ ********************************************************************************/
+
+
 #include <switch.h>
 
 #define OVLLOADER_TID 0x420000000007E51AULL
