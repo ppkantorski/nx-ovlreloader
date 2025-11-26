@@ -28,7 +28,7 @@
 
 #define OVLLOADER_TID 0x420000000007E51AULL
 #define CHECK_INTERVAL_NS 10000000ULL    // 10ms - check frequently
-#define RESPAWN_DELAY_NS 50000000ULL    // 100ms - wait before respawn
+#define RESPAWN_DELAY_NS 50000000ULL    // 50ms - wait before respawn
 #define TIMEOUT_NS 2000000000ULL         // 2 seconds - give up if process doesn't die
 #define INNER_HEAP_SIZE 0x4000
 
