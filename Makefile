@@ -122,6 +122,7 @@ sysmodule:
 	@rm -rf out/atmosphere
 	@mkdir -p out/atmosphere/contents/420000000007E51B
 	@cp $(BUILD)/$(TARGET).nsp out/atmosphere/contents/420000000007E51B/exefs.nsp
+	@cp toolbox.json out/atmosphere/contents/420000000007E51B/
 	@echo "Sys-module package created in out/atmosphere/"
 
 nro:
