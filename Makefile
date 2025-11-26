@@ -35,7 +35,7 @@ CFLAGS	:=	-g -Wall -Os -ffunction-sections -fdata-sections \
 
 CFLAGS	+=	$(INCLUDE) -D__SWITCH__ -DVERSION=\"v$(APP_VERSION)\"
 
-BUILDING_NRO_DIRECTIVE := 0
+BUILDING_NRO_DIRECTIVE ?= 0
 CFLAGS += -DBUILDING_NRO_DIRECTIVE=$(BUILDING_NRO_DIRECTIVE)
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
