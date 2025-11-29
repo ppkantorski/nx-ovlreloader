@@ -129,9 +129,9 @@ nro:
 	@[ -d $(BUILD_NRO) ] || mkdir -p $(BUILD_NRO)
 	@$(MAKE) --no-print-directory -C $(BUILD_NRO) -f $(CURDIR)/Makefile BUILDING_NRO_DIRECTIVE=1 DEPSDIR=$(CURDIR)/$(BUILD_NRO) OUTPUT=$(CURDIR)/$(BUILD_NRO)/$(TARGET)
 	@echo "Creating NRO package..."
-	@mkdir -p out/switch
-	@cp $(BUILD_NRO)/$(TARGET).nro out/switch/Ultrahand-Reload.nro
-	@echo "NRO package created in out/switch/"
+	@mkdir -p out/switch/Ultrahand-Reload
+	@cp $(BUILD_NRO)/$(TARGET).nro out/switch/Ultrahand-Reload/Ultrahand-Reload.nro
+	@echo "NRO package created in out/switch/Ultrahand-Reload/"
 
 #---------------------------------------------------------------------------------
 clean:
