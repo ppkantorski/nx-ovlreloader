@@ -16,7 +16,7 @@ BUILD_NRO	:=	build_nro
 SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
-APP_TITLE	:=  Ultrahand Reload
+APP_TITLE	:=  Ultrahand_Reload
 APP_AUTHOR	:=	ppkantorski
 APP_VERSION	:=	1.0.0
 APP_ICON	:=	icon.jpg
@@ -122,6 +122,7 @@ sysmodule:
 	@rm -rf out/atmosphere
 	@mkdir -p out/atmosphere/contents/420000000007E51B
 	@cp $(BUILD)/$(TARGET).nsp out/atmosphere/contents/420000000007E51B/exefs.nsp
+	@cp toolbox.json out/atmosphere/contents/420000000007E51B/
 	@echo "Sys-module package created in out/atmosphere/"
 
 nro:
@@ -138,14 +139,14 @@ clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(BUILD_NRO) $(TARGET).nsp $(TARGET).nso $(TARGET).npdm $(TARGET).elf $(TARGET).nacp $(TARGET).nro
 	@rm -rf out/
-	@rm -f $(TARGET).zip
+	@rm -f $(APP_TITLE).zip
 
 #---------------------------------------------------------------------------------
 dist: all
 	@echo making dist ...
-	@rm -f $(TARGET).zip
-	@cd out; zip -r ../$(TARGET).zip ./*; cd ../
-	@echo "Distribution package created: $(TARGET).zip"
+	@rm -f $(APP_TITLE).zip
+	@cd out; zip -r ../$(APP_TITLE).zip ./*; cd ../
+	@echo "Distribution package created: $(APP_TITLE).zip"
 
 #---------------------------------------------------------------------------------
 else
